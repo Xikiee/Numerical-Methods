@@ -15,10 +15,9 @@ def get_random_radian(N):
 trial_1_var = get_random_radian(10000)
 
 plt.hist(trial_1_var, bins = 6)
-mean_1 = np.mean(trial_1_var)
-std_1 = np.std(trial_1_var)
+print(f'{np.mean(trial_1_var) = }')
+print(f'{np.std(trial_1_var) =}')
 plt.show()
-print(mean_1, std_1)
 
 #Step 3
 #create a random walk of a person 
@@ -40,7 +39,6 @@ def get_xy_velocities(N): #N in this case is the number of steps
       return (x_1, y_1)
 get_xy_velocities(10) 
 
-print('Testing')
 
 
 
