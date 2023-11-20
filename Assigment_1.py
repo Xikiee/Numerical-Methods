@@ -40,7 +40,7 @@ def get_xy_velocities(N): #N in this case is the number of steps
       return (x_1, y_1)
 get_xy_velocities(10) 
 
-print('Testing')
+print('Test')
 
 
 
