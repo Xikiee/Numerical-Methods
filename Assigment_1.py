@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from math import sin, cos, pi
 import time 
 
 # Step 1
@@ -23,6 +24,33 @@ plt.show()
 #create a random walk of a person 
 #create a function get_xy_velocities(N) which returns a (x,y) vector containing the step in a random direction with a magnitude of 0.5m
 #store the dirrection of the person in a matrix pos where the first colunm is the x position and the second column is the y position 
+ss = 0.5 #step size
+
+def get_xy_velocities(N): #N in this case is the number of persons
+    x_direction = ss*math.cos(2*math.pi*np.random.rand())
+    y_direction = ss*math.sin(2*math.pi*np.random.rand())
+    return np.array([x_direction , y_direction])
+
+position = np.array([0.0,0.0]) #starting position of prisoner
+ns = 1000 #number of steps
+
+copy_position = [position.copy()] # Creating a copy for plotting
+
+for i in range(0,ns): # making the path for 1000 steps
+    position += get_xy_velocities(1)  # Get random velocity for N=1
+    copy_position.append(position.copy())  # Store position
+
+# Convert positions to a NumPy array for plotting
+copy_position = np.array(copy_position)
+
+# Plot the path
+plt.figure(figsize=(8, 8))
+plt.plot(copy_position[:, 0], copy_position[:, 1], marker='o')
+plt.title('Prisoner Path')
+plt.xlabel('X Position (m)')
+plt.ylabel('Y Position (m)')
+plt.grid(True)
+plt.show()
 
 xy_array = np.array([0,0])
 
