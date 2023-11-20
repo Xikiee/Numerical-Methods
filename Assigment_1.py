@@ -15,8 +15,8 @@ def get_random_radian(N):
 trial_1_var = get_random_radian(10000)
 
 plt.hist(trial_1_var, bins = 6)
-print(f'{np.mean(trial_1_var) = }')
-print(f'{np.std(trial_1_var) =}')
+print(f'The mean is {np.mean(trial_1_var)}')
+print(f'The standard deviation is {np.std(trial_1_var)}')
 plt.show()
 
 #Step 3
@@ -24,8 +24,7 @@ plt.show()
 #create a function get_xy_velocities(N) which returns a (x,y) vector containing the step in a random direction with a magnitude of 0.5m
 #store the dirrection of the person in a matrix pos where the first colunm is the x position and the second column is the y position 
 
-import numpy as np
-xy_array = np.array[(0,0)]
+xy_array = np.array([0,0])
 
 number_1 = np.array([0.1])
 for n in range(1,30):
