@@ -118,34 +118,81 @@ plt.show()
 #step 6
  
 fig = plt.figure(figsize = (8,8))
+fig.suptitle('Experimental Distances at different times')
 
 #graph 1 
 ax1 = plt.subplot(2,2,1)
 ax1.hist(magnitude[125], bins = 50, color= 'red')
-ax1.set_title('t=125')
+ax1.set_title('125 s')
 ax1.set_xlim (0,40)
 ax1.set_ylim (0,70)
 
 #graph 2 
 ax2 = plt.subplot(2,2,2)
 ax2.hist(magnitude[250], bins = 50, color= 'red')
-ax2.set_title('t=250')
+ax2.set_title('250 s')
 ax2.set_xlim (0,40)
 ax2.set_ylim (0,70)
 
 #graph 3
 ax3 = plt.subplot(2,2,3)
 ax3.hist(magnitude[375], bins = 50, color= 'red')
-ax3.set_title('t=375')
+ax3.set_title('375 s')
 ax3.set_xlim (0,40)
 ax3.set_ylim (0,70)
 
 #graph 4
 ax4 = plt.subplot(2, 2, 4)
 ax4.hist(magnitude[500], bins = 50, color= 'red')
-ax4.set_title('t=500')
+ax4.set_title('500 s')
 ax4.set_xlim (0,40)
 ax4.set_ylim (0,70)
 
 plt.plot()
+plt.show()
+
+#step 7
+
+# Make data.
+x_surf = np.arange(-30, 30, 0.025)
+y_surf = np.arange(-30, 30, 0.025)
+
+x_surf,y_surf = np.meshgrid(x_surf, y_surf)
+
+#creating the green function
+from matplotlib import cm
+def green_function(t):
+    exp = (-(x_surf**2 +y_surf**2))/(4*diff_c[t] *t)
+    return 1/(4*np.pi*diff_c[t]*t)*np.exp(exp)
+
+#plotting the figure
+fig_surf = plt.figure(figsize = (8,15))
+fig_surf.suptitle('Experimental Histogram vs Theoretical PFD')
+
+#graph set for t = 125 s
+#histogram plot
+ax1 = plt.subplot(2,2,1)
+ax1.hist(magnitude[125], bins = 50, color= 'red')
+ax1.set_title('125 s')
+ax1.set_xlim (0,40)
+ax1.set_ylim (0,70)
+#surface plot
+surf1 = fig_surf.add_subplot(2,2,3, projection='3d')
+surf1a = surf1.plot_surface(x_surf,y_surf, green_function(125), cmap=cm.magma,linewidth=0, antialiased=False)
+surf1.set_zlim(-0.01, 0.01)
+fig_surf.colorbar(surf1a, shrink=0.5, aspect=5)# Add a color bar which maps values to colors.
+
+#graph set for t = 500 s 
+#histogram plot
+ax2 = plt.subplot(2,2,2)
+ax2.hist(magnitude[500], bins = 50, color= 'red')
+ax2.set_title('500 s')
+ax2.set_xlim (0,40)
+ax2.set_ylim (0,70)
+#surface plot
+surf2 = fig_surf.add_subplot(2,2,4, projection='3d')
+surf2a = surf2.plot_surface(x_surf,y_surf, green_function(500), cmap=cm.magma,linewidth=0, antialiased=False)
+surf2.set_zlim(-0.01, 0.01)
+fig_surf.colorbar(surf2a, shrink=0.5, aspect=5)
+
 plt.show()
