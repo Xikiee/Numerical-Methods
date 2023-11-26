@@ -2,6 +2,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import time 
+from matplotlib import cm
 
 ###################################### Step 1 ######################################
 # multiply a random number between 0-1 by 2 pi to get a random number between 0-2pi
@@ -38,7 +39,7 @@ copy_position = [position.copy().flatten()] # Creating a copy for plotting
 
 for i in range(0,ns): # making the path for 1000 steps
    position += get_xy_velocities(1)  # Adding the random velocity to the starting position
-   copy_position.append(position.copy().flatten())  # Storing the position for plotting
+   copy_position.append(position.flatten())  # Storing the position for plotting
 
 
 copy_position = np.array(copy_position) # Convert copy_positions to array as the previous for loop resulted in a tuple formating 
@@ -155,7 +156,6 @@ y_surf = np.arange(-30, 30, 0.025)
 x_surf,y_surf = np.meshgrid(x_surf, y_surf)
 
 #creating the green function
-from matplotlib import cm
 def green_function(t):
     exp = (-(x_surf**2 +y_surf**2))/(4*theoretical_d *t)
     return 1/(4*np.pi*theoretical_d*t)*np.exp(exp)
@@ -189,3 +189,109 @@ surf2.set_title('500 s')
 fig_surf.colorbar(surf2a, shrink=0.5, aspect=5)
 
 plt.show()
+
+###################################### Step 8 ######################################
+
+fence = 12.0
+
+Np = 1000  # persons
+ns_f = 500  # number of steps
+
+fence_start_position = np.zeros([Np, 2])  # starting position of prisoners (all zeros)
+copy_fence_position_2 = [fence_start_position.copy()]  # Creating a copy for plotting
+for step in range(ns_2):  # making the path for 500 steps
+    fence_start_position += get_xy_velocities(Np)  # Adding the 1000 random velocities to the 1000 starting positions
+    copy_fence_position_2.append(fence_start_position.copy())  # Storing the position for plotting
+    copy_fence_position_2 = np.array(copy_fence_position_2)  # Convert copy_positions_2 to array
+    fence_magnitude = np.sqrt(copy_fence_position_2[:,:, 0]**2 +copy_fence_position_2[:,:,1]**2) #each row is the distance each prisoner is at that time
+    for person in range(Np):
+        if fence_magnitude[step,person] >= fence: 
+            copy_fence_position_2 [step][person] = copy_fence_position_2 [step-1][person] #returning them to the start position
+    copy_fence_position_2 = copy_fence_position_2.tolist()
+
+copy_fence_position_2 = np.array(copy_fence_position_2) 
+
+###################################### Step 9 ######################################
+
+#variables
+fence = 12.0
+Np = 1000  # persons
+prisoner_escaped = 0
+step = 0
+
+
+#maping exit
+escape_angle = 0.1 * np.pi
+t = np.linspace(0, escape_angle, 100)
+exit_line_x = fence * np.cos(t)
+exit_line_y = fence * np.sin(t)
+exit_line = np.column_stack((exit_line_x, exit_line_y))
+
+
+#conditions
+escape_time = []
+has_escaped = np.zeros(Np, dtype=bool)
+fence_start_position = np.zeros([Np, 2])
+copy_fence_position_2 = [fence_start_position.copy()]
+
+
+#running simulation
+while np.count_nonzero(has_escaped == False) > 0:
+    velocities = get_xy_velocities(Np)
+    for person in range(Np):
+        if not has_escaped[person]:
+            fence_start_position[person] += velocities[person]
+            position = fence_start_position[person].copy() #changing specific column to a list in order to be appended
+            copy_fence_position_2.append(position)
+            fence_magnitude = np.sqrt(position[0]**2 + position[1]**2)
+           
+            if fence_magnitude >= fence:
+                #################### Creating intersection definition
+                # Position of the person
+                pos_1 = copy_fence_position_2[-1]
+                pos_2 = copy_fence_position_2[-(Np + 1)]
+
+
+                # Define the counter clockwise (ccw) function
+                def ccw(A, B, C):
+                    return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
+               
+                # Return true if line segments AB and CD intersect
+                def intersect(A, B, C, D):
+                    return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+               
+                # Checking if the change in positions will intersect the exit line
+                def intersect_curved_line(A, B, curve):
+                    for i in range(len(curve) - 1):
+                        if intersect(A, B, curve[i], curve[i + 1]):
+                            return True
+                    return False
+                ########################## end of intersection definition
+
+
+                if intersect_curved_line(pos_1, pos_2, exit_line) == True:
+                    has_escaped[person] = True
+                    escape_time.append(step)
+                    prisoner_escaped += 1
+                else:
+                    fence_start_position[person] -= velocities[person]  # Return to original position
+    print (step)
+    step += 1
+
+
+np.array(copy_fence_position_2)
+print(prisoner_escaped)
+print(escape_time)
+print('Done')
+
+plt.hist(escape_time, bins = 7)
+plt.show()
+
+
+
+###################################### Step 10 ######################################
+
+
+
+
+###################################### Step 11 ######################################
