@@ -1,0 +1,652 @@
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+import time
+from matplotlib import cm
+from statistics import mean, median, mode
+
+
+###################################### Step 1 ######################################
+# multiply a random number between 0-1 by 2 pi to get a random number between 0-2pi
+2*math.pi*np.random.rand()
+
+
+
+
+###################################### Step 2 ######################################
+def get_random_radian(N):
+   return 2*math.pi*np.random.rand(N)
+
+trial_1_var = get_random_radian(10000)
+
+plt.hist(trial_1_var, bins = 6)
+plt.xlabel('Radian Values')
+plt.ylabel('Number of Values')
+plt.title ('Histogram of the Random Radians Generated', fontweight='bold')
+print(f'The mean is {np.mean(trial_1_var)}')
+print(f'The standard deviation is {np.std(trial_1_var)}')
+plt.show()
+
+
+###################################### Step 3 ######################################
+ss = 0.5 #step size
+
+def get_xy_velocities(N):  # N in this case is the number of persons
+    velocity = []
+    for n in range(N):
+        angle = 2 * np.pi * np.random.rand()
+        x_direction = ss * math.cos(angle) #cos of angle gives the x direction
+        y_direction = ss * math.sin(angle) #sin of angle gives the y direction
+        velocity.append([x_direction, y_direction])
+    return np.array(velocity)
+
+
+position = np.array([[0.0,0.0]]) #starting position of prisoner
+ns = 1000 #number of steps
+
+
+copy_position = [position.copy().flatten()] # Creating a copy for plotting
+
+
+for i in range(0,ns): # making the path for 1000 steps
+   position += get_xy_velocities(1)  # Adding the random velocity to the starting position
+   copy_position.append(position.flatten())  # Storing the position for plotting
+
+
+copy_position = np.array(copy_position) # Convert copy_positions to array as the previous for loop resulted in a tuple formating
+
+
+# Plotting the path
+plt.figure(figsize=(8, 8))
+plt.plot(copy_position[:, 0], copy_position[:, 1], marker='o')
+plt.title('Prisoner Path', fontweight='bold')
+plt.xlabel ('X - Coordinate (m)')
+plt.ylabel ('Y - Coordinate (m)')
+plt.grid(True)
+plt.show()
+
+
+
+
+###################################### Step 4 ######################################
+Np = 1000  # persons
+ns_2 = 500  # number of steps
+
+
+start_position = np.zeros([Np, 2])  # starting position of prisoners (all zeros)
+copy_position_2 = [start_position.copy()]  # Creating a copy for plotting
+
+
+for i in range(ns_2):  # making the path for 500 steps
+    start_position += get_xy_velocities(Np)  # Adding the 1000 random velocities to the 1000 starting positions
+    copy_position_2.append(start_position.copy())  # Storing the position for plotting
+
+
+copy_position_2 = np.array(copy_position_2)  # Convert copy_positions_2 to array
+
+
+#Plotting the figure with animation
+fig, ax = plt.subplots(figsize=(8,8))
+
+
+def update_plot(frame):
+    ax.clear()
+    ax.set_xlim(-30, 30)
+    ax.set_ylim(-30, 30)
+    for j in range(Np):
+        ax.plot(copy_position_2[:frame, j, 0], copy_position_2[:frame, j, 1], marker='o', markersize=1)
+    ax.set_title('1000 Prisoner Paths' , fontweight='bold')
+    ax.set_xlabel('X (m)')
+    ax.set_ylabel('Y (m)')
+    ax.grid(True)
+
+
+#creating animation
+for j in range(ns_2):
+   update_plot(j)
+   plt.pause(0.000000000001)
+   fig.canvas.draw()
+   fig.canvas.flush_events()
+plt.show() #warning running this will take a lot of time and the rest will not run until after the animation is finished (even if the figure is exited out)
+#suggestion of running until satisfied and then clear terminal and re run with the plotting animation onwards up to this point being commented.
+
+
+#plotting a 2d histogram with the x and y position of each prisoner
+plt.figure()
+plt.hist2d(copy_position_2[-1,:,0], copy_position_2[-1,:, 1], bins = (50,50), cmap=plt.cm.jet)
+plt.xlabel ('X - Coordinate (m)')
+plt.ylabel ('Y - Coordinate (m)')
+plt.title('Final Positions', fontweight='bold')
+plt.show()
+
+
+############ alternative to step 4 ############
+# an alternative was not chosen due to the whole path taken not being shown.
+# Np = 1000  # persons
+# ns_2 = 500  # number of steps
+
+
+# start_position = np.zeros([Np, 2])
+# copy_position_2 = np.zeros((ns_2, Np, 2))
+
+
+# # Generate random velocities for all steps at once
+# velocities = get_xy_velocities(ns_2 * Np).reshape(ns_2, Np, 2)
+
+
+# # Calculate cumulative sum to get positions for all steps
+# copy_position_2 = np.cumsum(velocities, axis=0) + start_position
+
+
+# #Plotting the figure with animation
+# fig, ax = plt.subplots(figsize=(8, 8))
+
+
+# def update_plot(frame):
+#     ax.clear()
+#     ax.set_xlim(-30, 30)
+#     ax.set_ylim(-30, 30)
+#     ax.plot(copy_position_2[frame, :, 0], copy_position_2[frame, :, 1], marker='o', markersize=1, linestyle='None')
+#     ax.set_title('1000 Prisoner Paths', fontweight='bold')
+#     ax.set_xlabel('X (m)')
+#     ax.set_ylabel('Y (m)')
+#     ax.grid(True)
+
+
+# # Creating animation
+# for j in range(ns_2):
+#     update_plot(j)
+#     plt.pause(0.000000000001)
+#     fig.canvas.draw()
+#     fig.canvas.flush_events()
+# plt.show()
+
+
+
+
+###################################### Step 5 ######################################
+#creating an array with all the final distances for each of the prisoners
+magnitude = np.sqrt(copy_position_2[:,:, 0]**2 +copy_position_2[:,:,1]**2) #each row is the distance each prisoner is at that time
+final_positon = magnitude[:, -1] #takes the last row and therefore the distance each prisoner is to the starting point
+msd = np.mean(magnitude**2, axis=1) #axis = 1 means to take the mean of every row(time) in magnitude^2
+#msd = 2nDt. n = 2 as it is 2 dimensional and t is the time
+time_steps = np.arange(0,ns_2+1)
+diff_c = msd / (2*2*time_steps)
+theoretical_d = ss**2/(2*2*1)
+theoretical_dx = np.full(501, theoretical_d) #creating x points for graphing the theoretical d
+
+
+plt.plot(time_steps,diff_c, label="Experimental")
+plt.plot(time_steps, theoretical_dx, label="Theoretical")
+plt.legend()
+plt.title('Diffusion Coefficient over Time (s)', fontweight='bold')
+plt.xlabel('Time (s)')
+plt.ylabel('Diffusion Coefficient')
+
+
+plt.show()
+
+
+
+###################################### Step 6 ######################################
+ 
+fig = plt.figure(figsize = (8,8))
+fig.suptitle('Experimental Distances at different times', fontweight='bold')
+
+
+#graph 1
+ax1 = plt.subplot(2,2,1)
+ax1.hist2d(copy_position_2[125,:,0], copy_position_2[125, :, 1], bins = 50)
+ax1.set_title('125 s')
+
+#graph 2
+ax2 = plt.subplot(2,2,2)
+ax2.hist2d(copy_position_2[250,:,0], copy_position_2[250, :, 1], bins = 50)
+ax2.set_title('250 s')
+
+#graph 3
+ax3 = plt.subplot(2,2,3)
+ax3.hist2d(copy_position_2[375, :, 0], copy_position_2[375,:, 1], bins = 50)
+ax3.set_title('375 s')
+
+#graph 4
+ax4 = plt.subplot(2, 2, 4)
+ax4.hist2d(copy_position_2[500, :, 0], copy_position_2[500, :, 1], bins = 50)
+ax4.set_title('500 s')
+
+
+plt.plot()
+plt.show()
+
+
+
+###################################### Step 7 ######################################
+
+
+# Make data.
+x_surf = np.arange(-30, 30, 0.025)
+y_surf = np.arange(-30, 30, 0.025)
+
+
+x_surf,y_surf = np.meshgrid(x_surf, y_surf)
+
+
+#creating the green function
+def green_function(t):
+    exp = (-(x_surf**2 +y_surf**2))/(4*theoretical_d *t)
+    return 1/(4*np.pi*theoretical_d*t)*np.exp(exp)
+
+
+#plotting the figure
+fig_surf = plt.figure(figsize = (12,10))
+fig_surf.suptitle('Experimental Histogram vs Theoretical PFD', fontweight='bold')
+
+
+#graph set for t = 125 s
+#histogram plot
+ax1 = plt.subplot(2,2,1)
+ax1.hist2d(copy_position_2[125, :, 0], copy_position_2[125, :, 1], bins = 50)
+ax1.set_title('Experimental Histogram at 125 s')
+#surface plot
+surf1 = fig_surf.add_subplot(2,2,3, projection='3d')
+surf1a = surf1.plot_surface(x_surf,y_surf, green_function(125), cmap=cm.magma,linewidth=0, antialiased=False)
+surf1.set_zlim(-0.01, 0.01)
+surf1.set_title('Theoretical PFD at 125 s')
+fig_surf.colorbar(surf1a, shrink=0.5, aspect=5)# Add a color bar which maps values to colors.
+
+
+#graph set for t = 500 s
+#histogram plot
+ax2 = plt.subplot(2,2,2)
+ax2.hist2d(copy_position_2[500, :, 0], copy_position_2[500, :, 1], bins = 50)
+ax2.set_title('Experimental Histogram at 500 s')
+#surface plot
+surf2 = fig_surf.add_subplot(2,2,4, projection='3d')
+surf2a = surf2.plot_surface(x_surf,y_surf, green_function(500), cmap=cm.magma,linewidth=0, antialiased=False)
+surf2.set_zlim(-0.01, 0.01)
+surf2.set_title('Theoretical PFD at 500 s')
+fig_surf.colorbar(surf2a, shrink=0.5, aspect=5)
+
+
+plt.show()
+
+
+###################################### Step 8 ######################################
+
+
+fence = 12.0
+
+
+Np = 1000  # persons
+ns_f = 500  # number of steps
+#the stop of this exercise was chosen at 500 time steps as at that time,
+# many prisoners have scattered throughout the whole perimeter and many have
+# hit the wall and were forced to go back
+
+
+fence_start_position = np.zeros([Np, 2])  # starting position of prisoners (all zeros)
+copy_fence_position_2 = [fence_start_position.copy()]  # Creating a copy for plotting
+for step in range(ns_f):  # making the path for 500 steps
+    velocities = get_xy_velocities(Np)
+    fence_start_position += velocities  # Adding the 1000 random velocities to the 1000 starting positions
+    position = fence_start_position.copy()
+    copy_fence_position_2.append(position)  # Storing the position for plotting
+    fence_magnitude = np.sqrt(position[:, 0]**2 +position[:,1]**2) #each row is the distance each prisoner is at that time
+    for person in range(Np):
+        if fence_magnitude[person] >= fence:
+            copy_fence_position_2 [step+1][person] = copy_fence_position_2 [step][person] #returning them to the start position
+
+
+copy_fence_position_2 = np.array(copy_fence_position_2)
+
+
+#plotting the different graphs
+fig_fence = plt.figure(figsize = (8,8))
+fig_fence.suptitle('Fence Prisoners Positions at Difference Times ', fontweight='bold')
+drawing_circle_1 = plt.Circle((0,0), 12, fill = False)
+drawing_circle_2 = plt.Circle((0,0), 12, fill = False)
+drawing_circle_3 = plt.Circle((0,0), 12, fill = False)
+drawing_circle_4 = plt.Circle((0,0), 12, fill = False)
+
+
+
+
+#graph 1
+axf_1 = plt.subplot(2,2,1)
+axf_1.set_xlim(-15,15)
+axf_1.set_ylim(-15,15)
+axf_1.scatter(copy_fence_position_2[5, :,0], copy_fence_position_2[5,:,1], s = 1 )
+axf_1.add_artist(drawing_circle_1)
+axf_1.set_title('Prisoners positions at 5 s')
+axf_1.set_xlabel('X (m)')
+axf_1.set_ylabel('Y (m)')
+axf_1.grid(True)
+
+
+
+
+#graph 2
+axf_2 = plt.subplot(2,2,2)
+axf_2.set_xlim(-15,15)
+axf_2.set_ylim(-15,15)
+axf_2.scatter(copy_fence_position_2[50, :,0], copy_fence_position_2[50,:,1], s = 1 )
+axf_2.add_artist(drawing_circle_2)
+axf_2.set_title('Prisoners positions at 50 s')
+axf_2.set_xlabel('X (m)')
+axf_2.set_ylabel('Y (m)')
+axf_2.grid(True)
+
+
+
+
+#graph 3
+axf_3 = plt.subplot(2,2,3)
+axf_3.set_xlim(-15,15)
+axf_3.set_ylim(-15,15)
+axf_3.scatter(copy_fence_position_2[100, :,0], copy_fence_position_2[100,:,1], s = 1 )
+axf_3.add_artist(drawing_circle_3)
+axf_3.set_title('Prisoners positions at 100 s')
+axf_3.set_xlabel('X (m)')
+axf_3.set_ylabel('Y (m)')
+axf_3.grid(True)
+
+
+
+
+#graph 4
+axf_4 = plt.subplot(2,2,4)
+axf_4.set_xlim(-15,15)
+axf_4.set_ylim(-15,15)
+axf_4.scatter(copy_fence_position_2[400, :,0], copy_fence_position_2[400,:,1], s = 1 )
+axf_4.add_artist(drawing_circle_4)
+axf_4.set_title('Prisoners positions at 400 s')
+axf_4.set_xlabel('X (m)')
+axf_4.set_ylabel('Y (m)')
+axf_4.grid(True)
+
+
+
+
+plt.show()
+
+
+# ###################################### Step 9 ######################################
+
+
+#variables
+fence = 12.0
+Np = 10000  # persons. Suggested to run with 1000 prisoners instead to accelerate the simulation
+prisoner_escaped = 0
+step = 0
+
+
+
+
+#mapping exit
+escape_angle = 0.1 * np.pi
+t = np.linspace(0, escape_angle, 100)
+exit_line_x = fence * np.cos(t)
+exit_line_y = fence * np.sin(t)
+exit_line = np.column_stack((exit_line_x, exit_line_y))
+
+
+
+
+#conditions
+escape_time = []
+has_escaped = np.zeros(Np, dtype=bool)
+fence_start_position = np.zeros([Np, 2])
+copy_fence_position_2 = [fence_start_position.copy()]
+
+
+
+
+#running simulation
+while np.count_nonzero(has_escaped == False) > 0:
+    velocities = get_xy_velocities(Np)
+    for person in range(Np):
+        if not has_escaped[person]:
+            fence_start_position[person] += velocities[person]
+            position = fence_start_position[person].copy() #changing specific column to a list in order to be appended
+            copy_fence_position_2.append(position)
+            fence_magnitude = np.sqrt(position[0]**2 + position[1]**2)
+           
+            if fence_magnitude >= fence:
+                #################### Creating intersection definition
+                # Position of the person
+                pos_1 = copy_fence_position_2[-1]
+                pos_2 = copy_fence_position_2[-(Np + 1)]
+
+
+
+
+                # Define the counter clockwise (ccw) function
+                def ccw(A, B, C):
+                    return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
+               
+                # Return true if line segments AB and CD intersect
+                def intersect(A, B, C, D):
+                    return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+               
+                # Checking if the change in positions will intersect the exit line
+                def intersect_curved_line(A, B, curve):
+                    for i in range(len(curve) - 1):
+                        if intersect(A, B, curve[i], curve[i + 1]):
+                            return True
+                    return False
+                ########################## end of intersection definition
+
+
+
+
+                if intersect_curved_line(pos_1, pos_2, exit_line) == True:
+                    has_escaped[person] = True
+                    escape_time.append(step)
+                    prisoner_escaped += 1
+                else:
+                    fence_start_position[person] -= velocities[person]  # Return to original position
+    print (step)
+    step += 1
+
+
+
+
+plt.hist(escape_time, bins = 10)
+plt.xlabel('Escape times (s)')
+plt.ylabel('Number of prisoners')
+plt.title('Times of When Prisoners Escaped', fontweight='bold')
+plt.show()
+
+
+
+
+
+
+
+
+############ Alternative for step 9 #########
+# code was not chosen due to the possibility of the edge case, where the
+# prisoner goes through the wall and is falsely labelled as escaped
+#instead the code above forces the prisoner to need to leave through the gate.
+# this is achieved through the need for the line created by the point outside the gate
+# and the line inside the gate to intersect with the escape arc line.
+
+
+# while np.count_nonzero(has_escaped == False) > 2:
+#     velocities = get_xy_velocities(Np)
+#     for person in range(Np):
+#         if not has_escaped[person]:
+#             fence_start_position[person] += velocities[person]
+#             position = fence_start_position[person].copy() #changing specific column to a list in order to be appended
+#             copy_fence_position_2.append(position)
+#             fence_magnitude = np.sqrt(position[0]**2 + position[1]**2)
+           
+#             if fence_magnitude >= fence:
+#                 if position[0] >= x_escape and position[1] >= 0:
+#                     has_escaped[person] = True
+#                     escape_time.append(step)
+#                     prisoner_escaped += 1
+#                 else:
+#                     fence_start_position[person] -= velocities[person]  # Return to original position
+#     print (step)
+#     step += 1
+
+
+# copy_fence_position_2 = np.array(copy_fence_position_2)
+
+
+
+
+
+
+
+
+
+
+###################################### Step 10 ######################################
+fence = 12.0
+diameter = 2*np.pi*fence
+
+
+# creating  function to show the theoretical mean escape time with varying gap size
+def mean_esc_ex_theoretical (a):
+    return (fence**2)/theoretical_d*(np.log10(diameter/a*fence) +np.log10(2)+(1/4))
+
+
+# creating  function to show the experimental escape time with varying gap size
+def esc_data_ex (a):
+    #variables
+    Np = 1000  # persons. due to speed less persons were used
+    prisoner_escaped = 0
+    step = 0
+
+
+    #mapping exit
+    escape_angle = a * np.pi
+    t = np.linspace(0, escape_angle, 100)
+    exit_line_x = fence * np.cos(t)
+    exit_line_y = fence * np.sin(t)
+    exit_line = np.column_stack((exit_line_x, exit_line_y))
+
+
+    #conditions
+    escape_time = []
+    has_escaped = np.zeros(Np, dtype=bool)
+    fence_start_position = np.zeros([Np, 2])
+    copy_fence_position_2 = [fence_start_position.copy()]
+
+
+    #running simulation
+    while np.count_nonzero(has_escaped == False) > 0:
+        velocities = get_xy_velocities(Np)
+        for person in range(Np):
+            if not has_escaped[person]:
+                fence_start_position[person] += velocities[person]
+                position = fence_start_position[person].copy() #changing specific column to a list in order to be appended
+                copy_fence_position_2.append(position)
+                fence_magnitude = np.sqrt(position[0]**2 + position[1]**2)
+           
+                if fence_magnitude >= fence:
+                    #################### Creating intersection definition
+                    # Position of the person
+                    pos_1 = copy_fence_position_2[-1]
+                    pos_2 = copy_fence_position_2[-(Np + 1)]
+
+
+
+
+                    # Define the counter clockwise (ccw) function
+                    def ccw(A, B, C):
+                        return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
+               
+                    # Return true if line segments AB and CD intersect
+                    def intersect(A, B, C, D):
+                        return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+               
+                    # Checking if the change in positions will intersect the exit line
+                    def intersect_curved_line(A, B, curve):
+                        for i in range(len(curve) - 1):
+                            if intersect(A, B, curve[i], curve[i + 1]):
+                                return True
+                        return False
+                    ########################## end of intersection definition
+
+
+
+
+                    if intersect_curved_line(pos_1, pos_2, exit_line) == True:
+                        has_escaped[person] = True
+                        escape_time.append(step)
+                        prisoner_escaped += 1
+                    else:
+                        fence_start_position[person] -= velocities[person]  # Return to original position
+        print (step)
+        step += 1
+    return escape_time
+
+
+#varying the gab size
+x_values = [0.1,0.25,0.5,0.75,1]
+
+
+#storing the escape times per gap size
+data_list = [esc_data_ex(i) for i in x_values]
+
+
+#creating the experimental data set
+mean_list = [mean(data) for data in data_list]
+median_list = [median(data) for data in data_list]
+mode_list = [mode(data) for data in data_list]
+
+
+#theoretical data set
+theoretical_list = []
+for i in x_values:
+    theoretical_list.append(mean_esc_ex_theoretical (i))
+
+
+
+
+# Plotting the different graphs
+fig_stat, axs = plt.subplots(1, 3, figsize=(15, 8), sharey=True)
+fig_stat.suptitle('Escape Time as Gap Increases', fontweight='bold')
+
+
+# Graph 1
+axm_1 = axs[0]
+axm_1.plot(x_values, mean_list, marker='o', markersize=1, label='Experimental')
+axm_1.plot(x_values, theoretical_list, marker='o', markersize=1, label='Theoretical')
+axm_1.legend()
+axm_1.set_title('Mean Escape Time as Gap Increases')
+axm_1.set_xlabel('Gap Angle Size (pi radians)')
+axm_1.set_ylabel('Escape Time')
+axm_1.grid(True)
+
+
+# Graph 2
+axm_2 = axs[1]
+axm_2.plot(x_values, median_list, marker='o', markersize=1, label='Experimental')
+axm_2.plot(x_values, theoretical_list, marker='o', markersize=1, label='Theoretical')
+axm_2.legend()
+axm_2.set_title('Median Escape Time as Gap Increases')
+axm_2.set_xlabel('Gap Angle Size (pi radians)')
+axm_2.grid(True)
+
+
+# Graph 3
+axm_3 = axs[2]
+axm_3.plot(x_values, mode_list, marker='o', markersize=1, label='Experimental')
+axm_3.plot(x_values, theoretical_list, marker='o', markersize=1, label='Theoretical')
+axm_3.legend()
+axm_3.set_title('Mode Escape Time as Gap Increases')
+axm_3.set_xlabel('Gap Angle Size (pi radians)')
+axm_3.grid(True)
+
+
+plt.show()
+
+
+####################################### Step 11 ######################################
+#code was more precise in step 9 thus step 11 is skipped
+
+
