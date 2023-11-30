@@ -1,0 +1,46 @@
+import numpy as np
+import sympy as sp
+
+######################################### Step 1 #########################################
+
+# assumption 1: Concentration of lake is constant. (PCB in = PCB out)
+# assumption 2: Lake ideally mixed. (PCB concentration out = PCB conecntration in lake)
+
+s = 180
+m = 810
+h = 630
+e = 2750
+o = 3820
+
+q_s = 72
+q_m = 38
+q_h = 160
+q_e = 185
+q_o = 215
+
+# equation un arranged
+
+
+######################################### Step 2 #########################################
+
+# matrix with Concentration of lake Ontario, Concentration of lake Erie, Concentration of lake Huron, Concentration of lake Michigan, Concentration of lake Superior
+conc_m = np.array([[-q_o,0,0,q_m,q_s], [0,-q_e,0,q_m,q_s], [0,0,-q_h,q_m,q_s], [0,0,0,1,0], [0,0,0,0,1]])
+right = np.array([s/q_s,m/q_m,-h,-h-e,-h-e-o])
+
+print(conc_m)
+print(right)
+
+#linalg solver: 
+linalg = np.linalg.solve(conc_m,right)
+print (linalg)
+#Gaussian elimination: 
+#LU decomposition: 
+# Jacobi and Gauss-Seidel 
+#scipy.linalg.lu?
+
+#Compile a table with the most relevant outcomes
+#(e.g. timings, accuracy, number of iterations where applicable), and explain shortly the
+#differences between the techniques.
+
+# gauss is slow
+#LU decomposition is fast, best for big systems of linear equation
