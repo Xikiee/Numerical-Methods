@@ -1,5 +1,6 @@
 import numpy as np
 import sympy as sp
+import time 
 
 ######################################### Step 1 #########################################
 
@@ -19,20 +20,34 @@ q_e = 185
 q_o = 215
 
 # equation un arranged
+# s = q_s*c_s
+# m = q_m*c_m
+# q_s*c_s + q_m* c_m + h = q_h*c_h
+# q_s*c_s + q_m* c_m + h + e =q _e*c_e
+# q_s*c_s + q_m* c_m + h + e + o = q_o*c_o
+
+# equation rearranged
+# c_s                          = s/q_s
+# c_m                          = m/q_m
+# q_s*c_s + q_m* c_m - q_h*c_h = -h
+# q_s*c_s + q_m* c_m - q_e*c_e = -h-e
+# q_s*c_s + q_m* c_m - q_o*c_o =  -h-e-o
 
 
 ######################################### Step 2 #########################################
 
 # matrix with Concentration of lake Ontario, Concentration of lake Erie, Concentration of lake Huron, Concentration of lake Michigan, Concentration of lake Superior
 conc_m = np.array([[-q_o,0,0,q_m,q_s], [0,-q_e,0,q_m,q_s], [0,0,-q_h,q_m,q_s], [0,0,0,1,0], [0,0,0,0,1]])
-right = np.array([s/q_s,m/q_m,-h,-h-e,-h-e-o])
+right = np.array([s/q_s,m/q_m,-h,-h-e,-h-e-o]) # solution vector
 
 print(conc_m)
 print(right)
 
 #linalg solver: 
+start_linalg = time.time()
 linalg = np.linalg.solve(conc_m,right)
-print (linalg)
+time_linalg = time.time() - start_linalg
+
 #Gaussian elimination: 
 #LU decomposition: 
 # Jacobi and Gauss-Seidel 
@@ -44,3 +59,25 @@ print (linalg)
 
 # gauss is slow
 #LU decomposition is fast, best for big systems of linear equation
+def gaussian_eliminate(A,b):
+    A = np.array(A,dtype=np.float64)
+    b = np.array(b,dtype=np.float64)
+
+    assert A.shape[0] == A.shape[1], "Coefficient matrix should be square"
+
+    N = len(b)
+    for col in range(N-1):
+        for row in range(col+1,N):
+            d = A[row,col] / A[col,col]
+            A[row,:] = A[row,:] - d * A[col,:]
+            b[row] = b[row] - d * b[col]
+
+    return A,b
+
+start_gauss = time.time()
+gaussian_eliminate(conc_m,right)
+time_gauss = time.time() - start_gauss
+
+print (linalg)
+print(f'{time_linalg}')
+print(f'{time_gauss}')
